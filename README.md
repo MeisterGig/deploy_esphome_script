@@ -1,4 +1,4 @@
-# deploy_esphome_script
+# deploy_esphome_fablux_script
 
 Ansible Playbook for the creation of a light controller with buttons and adressable LEDs
 

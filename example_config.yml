@@ -1,0 +1,27 @@
+---
+
+#General Settings
+
+api_password: "xxx"
+ota_password: "xxx"
+wifi:
+  ssid: "Test"
+  password: "xxx"
+access_point_password: "xxx"
+mqtt_broker: "10.0.0.1"
+
+#Hardware
+
+esp_board: "esp32dev"
+led_control_pin: 12
+
+#Dictionary to join everything
+lights_button_map:
+  - name: "Example 1"
+    topic: "zigbee2mqtt/example"
+    button_pin: 1
+    led: 0
+  - name: "Example 2"
+    topic: "zigbee2mqtt/example"
+    button_pin: 1
+    led: 1

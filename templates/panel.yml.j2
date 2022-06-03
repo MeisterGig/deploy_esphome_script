@@ -1,0 +1,89 @@
+esphome:
+  name: panel
+
+esp32:
+  board: {{ esp_board }}
+
+# Enable logging
+logger:
+  level: VERBOSE
+  logs:
+    mqtt.component: DEBUG
+    mqtt.client: DEBUG
+
+# Enable Home Assistant API
+api:
+  password: "{{ api_password }}"
+
+ota:
+  password: "{{ ota_password }}"
+
+wifi:
+  ssid: "{{ wifi.ssid }}"
+  password: "{{ wifi.password }}"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Panel Fallback Hotspot"
+    password: "{{ access_point_password }}"
+
+captive_portal:
+
+mqtt:
+  broker: {{ mqtt_broker }}
+  #username: livingroom
+  id: mqtt_client
+  on_json_message:
+{% for dict_item in lights_button_map %}
+    - topic: {{ dict_item.topic }}
+      then:
+        - light.addressable_set:
+            id: led
+            range_from: {{ dict_item.led }}
+            range_to: {{ dict_item.led + 1 }}
+            green: !lambda |-
+              if (strcmp(x["state"],"ON")==0){
+                ESP_LOGD("{{ dict_item.name }} LED", "ON");
+                return 1.0;
+              }else{
+                ESP_LOGD("{{ dict_item.name }} LED", "OFF");
+                return 0.0;
+              }
+            red: !lambda |-
+              if (strcmp(x["state"],"ON")==0) return 1.0;
+              else return 0.0;
+            blue: !lambda |-
+              if (strcmp(x["state"],"ON")==0) return 1.0;
+              else return 0.0;
+              
+{% endfor %}
+          
+
+
+light:
+  - platform: fastled_clockless
+    chipset: WS2812B
+    pin: {{ led_control_pin }}
+    num_leds: {{ lights_button_map | length }}
+    rgb_order: RGB
+    id: led
+
+binary_sensor:
+{% for dict_item in lights_button_map %}
+  - platform: gpio
+    name: "{{ dict_item.name }}"
+    pin:
+      number: {{ dict_item.button_pin }}
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    on_click:
+      min_length: 50ms
+      max_length: 5000ms
+      then:
+        - logger.log: 'click registered'
+        - mqtt.publish:
+            topic: '{{ dict_item.topic }}/set/state'
+            payload: 'TOGGLE'
+{% endfor %}

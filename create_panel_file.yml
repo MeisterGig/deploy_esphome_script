@@ -1,0 +1,19 @@
+- name: Playbook to create esphome config file
+  hosts: 127.0.0.1
+  connection: local
+  tasks:
+    - name: Load config file
+      ansible.builtin.include_vars:
+        file: config.yml
+    
+    - name: Ensure output folder exists
+      ansible.builtin.file:
+        state: directory
+        mode: 0755
+        path: output
+
+    - name: Create file from Template
+      ansible.builtin.template:
+        dest: output/panel.yml
+        src: panel.yml.j2
+        mode: 0755 

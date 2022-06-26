@@ -16,4 +16,8 @@
       ansible.builtin.template:
         dest: output/panel.yml
         src: panel.yml.j2
-        mode: 0755 
+        mode: 0755
+
+    - name: Flash Software to ESP
+      ansible.builtin.command: 
+        cmd: esphome run --no-logs --device {{ wifi.ip_address }} output/panel.yml

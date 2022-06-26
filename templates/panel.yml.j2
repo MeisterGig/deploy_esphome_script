@@ -1,7 +1,10 @@
 esphome:
   name: panel
-
-esp32:
+{{ esp_type }}:
+{% if 'esp8266' in esp_type %}
+  framework:
+    version: 2.7.4
+{% endif %}
   board: {{ esp_board }}
 
 # Enable logging
@@ -21,7 +24,9 @@ ota:
 wifi:
   ssid: "{{ wifi.ssid }}"
   password: "{{ wifi.password }}"
-
+{% if wifi.ip_address is defined %}
+  use_address: "{{ wifi.ip_address }}"
+{% endif %}
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     ssid: "Panel Fallback Hotspot"
@@ -40,7 +45,7 @@ mqtt:
         - light.addressable_set:
             id: led
             range_from: {{ dict_item.led }}
-            range_to: {{ dict_item.led + 1 }}
+            range_to: {{ dict_item.led }}
             green: !lambda |-
               if (strcmp(x["state"],"ON")==0){
                 ESP_LOGD("{{ dict_item.name }} LED", "ON");
